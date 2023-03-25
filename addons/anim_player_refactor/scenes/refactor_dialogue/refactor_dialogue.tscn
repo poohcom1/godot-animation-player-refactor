@@ -1,0 +1,122 @@
+[gd_scene load_steps=4 format=3 uid="uid://cyfxysds8uhnx"]
+
+[ext_resource type="Script" path="res://addons/anim_player_refactor/scenes/refactor_dialogue/refactor_dialogue.gd" id="1_4tkdp"]
+[ext_resource type="Script" path="res://addons/anim_player_refactor/scenes/refactor_dialogue/components/anim_player_tree.gd" id="2_7pqfs"]
+[ext_resource type="Script" path="res://addons/anim_player_refactor/scenes/refactor_dialogue/components/node_select.gd" id="3_87x4i"]
+
+[node name="RefactorDialogue" type="AcceptDialog"]
+title = "Refactor Animations"
+size = Vector2i(316, 599)
+ok_button_text = "Close"
+script = ExtResource("1_4tkdp")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 308.0
+offset_bottom = 550.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="SearchContainer" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="TreeContainer" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/TreeContainer"]
+layout_mode = 2
+text = "Properties
+"
+
+[node name="LineEdit" type="LineEdit" parent="VBoxContainer/TreeContainer"]
+layout_mode = 2
+placeholder_text = "Filter..."
+caret_blink = true
+caret_blink_interval = 0.5
+
+[node name="AnimPlayerTree" type="Tree" parent="VBoxContainer/TreeContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 400)
+layout_mode = 2
+size_flags_vertical = 3
+hide_root = true
+scroll_horizontal_enabled = false
+script = ExtResource("2_7pqfs")
+
+[node name="RootNodeContainer" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/RootNodeContainer"]
+layout_mode = 2
+text = "Root Node"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/RootNodeContainer"]
+layout_mode = 2
+
+[node name="RootNodeTree" type="Tree" parent="VBoxContainer/RootNodeContainer/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+size_flags_horizontal = 3
+scroll_horizontal_enabled = false
+scroll_vertical_enabled = false
+
+[node name="ChangeRoot" type="Button" parent="VBoxContainer/RootNodeContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 8
+text = "Change Root"
+
+[node name="EditDialogue" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Renaming"
+size = Vector2i(300, 153)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="EditDialogue"]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 292.0
+offset_bottom = 104.0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="EditDialogue/VBoxContainer"]
+layout_mode = 2
+
+[node name="EditDialogueButton" type="Button" parent="EditDialogue/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="EditInput" type="LineEdit" parent="EditDialogue/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="EditFullPathToggle" type="CheckButton" parent="EditDialogue/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 8
+text = "Edit full path"
+
+[node name="NodeSelectDialogue" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Select a node..."
+ok_button_text = "Change"
+
+[node name="NodeSelect" type="Tree" parent="NodeSelectDialogue"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(600, 500)
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 592.0
+offset_bottom = 451.0
+scroll_horizontal_enabled = false
+script = ExtResource("3_87x4i")
+
+[connection signal="button_clicked" from="VBoxContainer/TreeContainer/AnimPlayerTree" to="." method="_on_tree_button_clicked"]
+[connection signal="item_edited" from="VBoxContainer/TreeContainer/AnimPlayerTree" to="." method="_on_item_edited"]
+[connection signal="pressed" from="VBoxContainer/RootNodeContainer/HBoxContainer/ChangeRoot" to="." method="_on_change_root_pressed"]
+[connection signal="confirmed" from="EditDialogue" to="." method="_on_rename_confirmed"]
+[connection signal="text_submitted" from="EditDialogue/VBoxContainer/EditInput" to="." method="_on_rename_confirmed"]
+[connection signal="toggled" from="EditDialogue/VBoxContainer/EditFullPathToggle" to="." method="_on_full_path_toggled"]
+[connection signal="confirmed" from="NodeSelectDialogue" to="." method="_on_node_select_confirmed"]
