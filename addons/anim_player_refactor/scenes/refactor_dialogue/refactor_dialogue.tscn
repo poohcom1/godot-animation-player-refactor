@@ -86,6 +86,7 @@ layout_mode = 2
 [node name="EditDialogueButton" type="Button" parent="EditDialogue/VBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+focus_mode = 0
 
 [node name="EditInput" type="LineEdit" parent="EditDialogue/VBoxContainer"]
 unique_name_in_owner = true

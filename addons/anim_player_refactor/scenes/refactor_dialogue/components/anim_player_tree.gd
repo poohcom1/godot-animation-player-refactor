@@ -121,7 +121,7 @@ func render(editor_plugin: EditorPlugin, anim_player: AnimationPlayer) -> void:
 			if invalid:
 				property_item.set_custom_color(0, Color.RED)
 				property_item.set_tooltip_text(
-					0, "Possibly invalid value: %s:%s" % [path, info.path]
+					0, "Possibly invalid value: %s" % info.path
 				)
 
 

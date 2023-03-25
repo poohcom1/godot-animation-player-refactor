@@ -17,7 +17,7 @@ var _anim_player: AnimationPlayer
 
 @onready var edit_dialogue: ConfirmationDialog = $%EditDialogue
 @onready var edit_dialogue_input: LineEdit = $%EditInput
-@onready var edit_dialogue_button: Button = $%EditDialogueButton
+@onready var edit_dialogue_button: Button = $%EditDialogueButton # Just for pretty icon display
 @onready var edit_full_path_toggle: CheckButton = $%EditFullPathToggle
 
 @onready var node_select_dialogue: ConfirmationDialog = $%NodeSelectDialogue
@@ -42,17 +42,8 @@ func _ready() -> void:
 	about_to_popup.connect(render)
 
 
-
 func render():
 	_anim_player = get_anim_player()
-
-	title = (
-		"Refactoring %s::%s"
-		% [
-			_anim_player.owner.scene_file_path.substr(6),
-			_anim_player.owner.get_path_to(_anim_player)
-		]
-	)
 
 	if not _anim_player or not _anim_player is AnimationPlayer:
 		push_error("AnimationPlayer is null or invalid")
@@ -116,7 +107,11 @@ func _render_edit_dialogue():
 			EditInfo.Type.VALUE_TRACK, EditInfo.Type.METHOD_TRACK:
 				edit_dialogue_input.text = info.path.get_concatenated_subnames()
 	edit_dialogue_button.text = info.node_path
+	if str(info.node_path) in [".", ".."] and info.node:
+		# Show name for relatives paths
+		edit_dialogue_button.text = info.node.name
 	if info.node:
+		# Show icon
 		edit_dialogue_button.icon = _editor_interface.get_base_control().get_theme_icon(
 			info.node.get_class(), "EditorIcons"
 		)
@@ -147,8 +142,8 @@ func _rename(item: TreeItem, new: String):
 			var new_path = new
 			if not is_full_path:
 				new_path = ""
-				for i in range(new_path.get_name_count() - 1):
-					new_path += new_path.get_name(i) + "/"
+				for i in range(info.path.get_name_count() - 1):
+					new_path += info.path.get_name(i) + "/"
 				new_path += new
 			AnimPlayerRefactor.rename_node_path(_anim_player, old, NodePath(new))
 		EditInfo.Type.VALUE_TRACK:
