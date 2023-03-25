@@ -114,8 +114,12 @@ offset_bottom = 451.0
 scroll_horizontal_enabled = false
 script = ExtResource("3_87x4i")
 
+[node name="ConfirmationDialog" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+ok_button_text = "Delete"
+dialog_autowrap = true
+
 [connection signal="button_clicked" from="VBoxContainer/TreeContainer/AnimPlayerTree" to="." method="_on_tree_button_clicked"]
-[connection signal="item_edited" from="VBoxContainer/TreeContainer/AnimPlayerTree" to="." method="_on_item_edited"]
 [connection signal="pressed" from="VBoxContainer/RootNodeContainer/HBoxContainer/ChangeRoot" to="." method="_on_change_root_pressed"]
 [connection signal="confirmed" from="EditDialogue" to="." method="_on_rename_confirmed"]
 [connection signal="text_submitted" from="EditDialogue/VBoxContainer/EditInput" to="." method="_on_rename_confirmed"]

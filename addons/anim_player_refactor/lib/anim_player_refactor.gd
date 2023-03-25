@@ -1,4 +1,4 @@
-## Utility class to handle all refactoring logic
+## Core utility class to handle all refactoring logic
 
 
 # Nodes
@@ -21,7 +21,7 @@ static func rename_node_path(anim_player: AnimationPlayer, old: NodePath, new: N
 
 	var count = recurse_animations(anim_player, callback)
 
-	print("Renamed %d tracks!" % count)
+	print("[Animation Refactor] Renamed %d tracks." % count)
 
 
 static func remove_node_path(anim_player: AnimationPlayer, node_path: NodePath):
@@ -37,7 +37,7 @@ static func remove_node_path(anim_player: AnimationPlayer, node_path: NodePath):
 
 	var count = recurse_animations(anim_player, callback)
 
-	print("Removed %d tracks!" % count)
+	print("[Animation Refactor] Removed %d tracks." % count)
 
 # Tracks
 
@@ -56,7 +56,7 @@ static func rename_track_path(anim_player: AnimationPlayer, old: NodePath, new: 
 
 	var count = recurse_animations(anim_player, callback)
 
-	print("Renamed %d tracks!" % count)
+	print("[Animation Refactor] Renamed %d tracks!" % count)
 
 
 static func remove_track_path(anim_player: AnimationPlayer, property_path: NodePath):
@@ -71,24 +71,30 @@ static func remove_track_path(anim_player: AnimationPlayer, property_path: NodeP
 	
 	var count = recurse_animations(anim_player, callback)
 
-	print("Removed %d tracks!" % count)
+	print("[Animation Refactor] Removed %d tracks!" % count)
 
 
 # Method tracks
-
-static func rename_method(anim_player, node: NodePath, old: StringName, new: StringName):
+static func rename_method(anim_player, old: NodePath, new: NodePath):
 	if old == new:
 		return
+
+	var node_path := NodePath(old.get_concatenated_names())
+	var old_method := old.get_concatenated_subnames()
+	var new_method := new.get_concatenated_subnames()
 
 	var callback = func(animation: Animation):
 		var count := 0
 		for i in animation.get_track_count():
-			if animation.track_get_type(i) == Animation.TYPE_METHOD:
+			if (
+				animation.track_get_type(i) == Animation.TYPE_METHOD
+				and animation.track_get_path(i) == node_path
+			):
 				for j in animation.track_get_key_count(i):
 					var name := animation.method_track_get_name(i, j)
-					if name == old:
+					if name == old_method:
 						var method := {
-							"method": new,
+							"method": new_method,
 							"args": animation.method_track_get_params(i, j)
 						}
 
@@ -99,7 +105,12 @@ static func rename_method(anim_player, node: NodePath, old: StringName, new: Str
 
 	var count = recurse_animations(anim_player, callback)
 
-	print("Renamed %d method keys!" % count)
+	print("[Animation Refactor] Renamed %d method keys!" % count)
+
+
+static func remove_method(anim_player: AnimationPlayer, method_path: NodePath):
+	pass
+
 
 # Root
 static func change_root(anim_player: AnimationPlayer, new_path: NodePath):
@@ -125,7 +136,7 @@ static func change_root(anim_player: AnimationPlayer, new_path: NodePath):
 
 	recurse_animations(anim_player, callback)
 	anim_player.root_node = new_path
-	print("Changed root to %s" % new_root.name)
+	print("[Animation Refactor] Changed root to %s" % new_root.name)
 
 
 # Helper

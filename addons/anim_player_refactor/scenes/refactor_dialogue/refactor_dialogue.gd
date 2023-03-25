@@ -23,7 +23,7 @@ var _anim_player: AnimationPlayer
 @onready var node_select_dialogue: ConfirmationDialog = $%NodeSelectDialogue
 @onready var node_select: NodeSelect = $%NodeSelect
 
-var _selected_item: TreeItem
+@onready var confirmation_dialogue: ConfirmationDialog = $%ConfirmationDialog
 
 
 var is_full_path: bool:
@@ -76,7 +76,6 @@ func render():
 var _current_info: EditInfo
 func _on_tree_button_clicked(item: TreeItem, column: int, id: int, mouse_button_index: int):
 	_current_info = item.get_metadata(column)
-	_selected_item = item
 
 	if id == 0:
 		# Rename
@@ -86,7 +85,22 @@ func _on_tree_button_clicked(item: TreeItem, column: int, id: int, mouse_button_
 		edit_dialogue_input.select_all()
 	elif id == 1:
 		# Remove
-		pass
+		var track_path = _current_info.path
+		var anim_player = get_anim_player()
+		var node = anim_player\
+			.get_node(anim_player.root_node)\
+			.get_node_or_null(_current_info.path)
+			
+		if node:
+			track_path = node.name
+			var property := _current_info.path.get_concatenated_subnames()
+			if not property.is_empty():
+				track_path += ":" + property
+		
+		_show_confirmation(
+			"Are you sure you want to delete tracks '%s'?" % track_path,
+			_remove
+		)
 
 
 func _render_edit_dialogue():
@@ -101,11 +115,15 @@ func _render_edit_dialogue():
 	if is_full_path:
 		edit_dialogue_input.text = info.path
 	else:
-		match info.type:
-			EditInfo.Type.NODE:
-				edit_dialogue_input.text = info.path.get_name(info.path.get_name_count() - 1)
-			EditInfo.Type.VALUE_TRACK, EditInfo.Type.METHOD_TRACK:
-				edit_dialogue_input.text = info.path.get_concatenated_subnames()
+		if info.type == EditInfo.Type.NODE:
+			edit_dialogue.title = "Rename node"
+			edit_dialogue_input.text = info.path.get_name(info.path.get_name_count() - 1)
+		elif info.type == EditInfo.Type.VALUE_TRACK:
+			edit_dialogue.title = "Rename Value"
+			edit_dialogue_input.text = info.path.get_concatenated_subnames()
+		elif info.type == EditInfo.Type.METHOD_TRACK:
+			edit_dialogue.title = "Rename method"
+			edit_dialogue_input.text = info.path.get_concatenated_subnames()
 	edit_dialogue_button.text = info.node_path
 	if str(info.node_path) in [".", ".."] and info.node:
 		# Show name for relatives paths
@@ -117,15 +135,15 @@ func _render_edit_dialogue():
 		)
 
 
+## Toggle full path and re-render edit dialogue
 func _on_full_path_toggled(pressed: bool):
 	_render_edit_dialogue()
 
 
+## Callback on rename
 func _on_rename_confirmed(_arg0 = null):
-	_rename(_selected_item, edit_dialogue_input.text)
-
-
-func _rename(item: TreeItem, new: String):
+	var new := edit_dialogue_input.text
+	
 	edit_dialogue.hide()
 	if not _anim_player or not _anim_player is AnimationPlayer:
 		push_error("AnimationPlayer is null or invalid")
@@ -133,34 +151,43 @@ func _rename(item: TreeItem, new: String):
 
 	if new.is_empty():
 		return
-	
 
-	var info: EditInfo = item.get_metadata(0)
-	match info.type:
-		EditInfo.Type.NODE:
-			var old := info.path
-			var new_path = new
-			if not is_full_path:
-				new_path = ""
-				for i in range(info.path.get_name_count() - 1):
-					new_path += info.path.get_name(i) + "/"
-				new_path += new
-			AnimPlayerRefactor.rename_node_path(_anim_player, old, NodePath(new))
-		EditInfo.Type.VALUE_TRACK:
-			var old_path := info.path
-			var new_path := NodePath(new)
-			if not is_full_path:
-				new_path = info.node_path.get_concatenated_names() + ":" + new
-			AnimPlayerRefactor.rename_track_path(_anim_player, old_path, new_path)
-		EditInfo.Type.METHOD_TRACK:
-			var old_method := info.path.get_concatenated_subnames()
-			var new_method := StringName(new)
-			AnimPlayerRefactor.rename_method(_anim_player, info.node_path, old_method, new_method)
+	var info: EditInfo = _current_info
+	if info.type == EditInfo.Type.NODE:
+		var old := info.path
+		var new_path = new
+		if not is_full_path:
+			new_path = ""
+			for i in range(info.path.get_name_count() - 1):
+				new_path += info.path.get_name(i) + "/"
+			new_path += new
+		AnimPlayerRefactor.rename_node_path(_anim_player, old, NodePath(new))
+	elif info.type == EditInfo.Type.VALUE_TRACK:
+		var old_path := info.path
+		var new_path := NodePath(new)
+		if not is_full_path:
+			new_path = info.node_path.get_concatenated_names() + ":" + new
+		AnimPlayerRefactor.rename_track_path(_anim_player, old_path, new_path)
+	elif info.type == EditInfo.Type.METHOD_TRACK:
+		var old_method := info.path
+		var new_method := NodePath(
+			info.path.get_concatenated_names() + ":" + new
+		)
+		AnimPlayerRefactor.rename_method(_anim_player, old_method, new_method)
 	await get_tree().create_timer(0.1).timeout
 	render()
 
 
-func _remove(tree_item: TreeItem):
+func _remove():
+	var info: EditInfo = _current_info
+	match info.type:
+		EditInfo.Type.NODE:
+			AnimPlayerRefactor.remove_node_path(_anim_player, info.node_path)
+		EditInfo.Type.VALUE_TRACK:
+			AnimPlayerRefactor.remove_track_path(_anim_player, info.path)
+		EditInfo.Type.METHOD_TRACK:
+			pass
+			# AnimPlayerRefactor.remove_method(_anim_player, info.node_path, old_method, new_method)
 	await get_tree().create_timer(0.1).timeout
 	render()
 
@@ -180,6 +207,15 @@ func _on_node_select_confirmed():
 	render()
 
 
+# Confirmation
+func _show_confirmation(text: String, on_confirmed: Callable):
+	for c in confirmation_dialogue.confirmed.get_connections():
+		confirmation_dialogue.confirmed.disconnect(c.callable)
+
+	confirmation_dialogue.confirmed.connect(on_confirmed)
+	confirmation_dialogue.popup_centered()
+	confirmation_dialogue.dialog_text = text
+
 # Helper
 func get_anim_player() -> AnimationPlayer:
 	if not _editor_interface:
@@ -192,11 +228,3 @@ func get_anim_player() -> AnimationPlayer:
 
 	return null
 
-
-## Unused
-func _on_item_edited():
-	if not _anim_player or not _anim_player is AnimationPlayer:
-		push_error("AnimationPlayer is null or invalid")
-		return
-
-	_rename(tree.get_edited(), tree.get_edited().get_text(0))
