@@ -21,3 +21,7 @@ project/assembly_name="Animation Player Refactor"
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/anim_player_refactor/plugin.cfg")
+
+[filesystem]
+
+import/blender/enabled=false

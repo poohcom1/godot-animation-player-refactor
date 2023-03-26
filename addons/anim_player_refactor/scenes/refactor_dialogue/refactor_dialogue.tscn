@@ -19,18 +19,14 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 8
 
-[node name="SearchContainer" type="VBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-
 [node name="TreeContainer" type="VBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 
 [node name="Label" type="Label" parent="VBoxContainer/TreeContainer"]
 layout_mode = 2
-text = "Properties
-"
+text = "Properties:"
 
-[node name="LineEdit" type="LineEdit" parent="VBoxContainer/TreeContainer"]
+[node name="FilterInput" type="LineEdit" parent="VBoxContainer/TreeContainer"]
 layout_mode = 2
 placeholder_text = "Filter..."
 caret_blink = true
@@ -119,7 +115,10 @@ unique_name_in_owner = true
 ok_button_text = "Delete"
 dialog_autowrap = true
 
+[connection signal="about_to_popup" from="." to="VBoxContainer/TreeContainer/FilterInput" method="clear"]
+[connection signal="text_changed" from="VBoxContainer/TreeContainer/FilterInput" to="VBoxContainer/TreeContainer/AnimPlayerTree" method="set_filter"]
 [connection signal="button_clicked" from="VBoxContainer/TreeContainer/AnimPlayerTree" to="." method="_on_tree_button_clicked"]
+[connection signal="rendered" from="VBoxContainer/TreeContainer/AnimPlayerTree" to="VBoxContainer/TreeContainer/FilterInput" method="clear"]
 [connection signal="pressed" from="VBoxContainer/RootNodeContainer/HBoxContainer/ChangeRoot" to="." method="_on_change_root_pressed"]
 [connection signal="confirmed" from="EditDialogue" to="." method="_on_rename_confirmed"]
 [connection signal="text_submitted" from="EditDialogue/VBoxContainer/EditInput" to="." method="_on_rename_confirmed"]

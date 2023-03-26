@@ -1,13 +1,15 @@
 @tool
 extends AcceptDialog
 
+const CustomEditorPlugin := preload("res://addons/anim_player_refactor/plugin.gd")
+
 const AnimPlayerRefactor = preload("res://addons/anim_player_refactor/lib/anim_player_refactor.gd")
 const AnimPlayerTree := preload("components/anim_player_tree.gd")
 const EditInfo := preload("components/edit_info.gd")
 
 const NodeSelect := preload("components/node_select.gd")
 
-var _editor_plugin: EditorPlugin
+var _editor_plugin: CustomEditorPlugin
 var _editor_interface: EditorInterface
 var _anim_player: AnimationPlayer
 
@@ -31,7 +33,7 @@ var is_full_path: bool:
 	get: return edit_full_path_toggle.button_pressed
 
 
-func init(editor_plugin: EditorPlugin) -> void:
+func init(editor_plugin: CustomEditorPlugin) -> void:
 	_editor_plugin = editor_plugin
 	_editor_interface = editor_plugin.get_editor_interface()
 	node_select.init(_editor_plugin)
@@ -43,7 +45,7 @@ func _ready() -> void:
 
 
 func render():
-	_anim_player = get_anim_player()
+	_anim_player = _editor_plugin.get_anim_player()
 
 	if not _anim_player or not _anim_player is AnimationPlayer:
 		push_error("AnimationPlayer is null or invalid")
@@ -86,7 +88,7 @@ func _on_tree_button_clicked(item: TreeItem, column: int, id: int, mouse_button_
 	elif id == 1:
 		# Remove
 		var track_path = _current_info.path
-		var anim_player = get_anim_player()
+		var anim_player = _editor_plugin.get_anim_player()
 		var node = anim_player\
 			.get_node(anim_player.root_node)\
 			.get_node_or_null(_current_info.path)
@@ -195,13 +197,13 @@ func _remove():
 # Change root
 func _on_change_root_pressed():
 	node_select_dialogue.popup_centered()
-	node_select.render(get_anim_player())
+	node_select.render(_editor_plugin.get_anim_player())
 
 
 func _on_node_select_confirmed():
 	var path: NodePath = node_select.get_selected().get_metadata(0)
 
-	AnimPlayerRefactor.change_root(get_anim_player(), path)
+	AnimPlayerRefactor.change_root(_editor_plugin.get_anim_player(), path)
 
 	await get_tree().create_timer(0.1).timeout
 	render()
@@ -216,15 +218,4 @@ func _show_confirmation(text: String, on_confirmed: Callable):
 	confirmation_dialogue.popup_centered()
 	confirmation_dialogue.dialog_text = text
 
-# Helper
-func get_anim_player() -> AnimationPlayer:
-	if not _editor_interface:
-		return null
-	var selection := _editor_interface.get_selection()
-	var nodes := selection.get_selected_nodes()
-
-	if nodes.size() == 1 and nodes[0] is AnimationPlayer:
-		return nodes[0]
-
-	return null
 
