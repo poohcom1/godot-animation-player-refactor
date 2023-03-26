@@ -1,6 +1,5 @@
 ## Core utility class to handle all refactoring logic
 
-
 # Nodes
 
 static func rename_node_path(anim_player: AnimationPlayer, old: NodePath, new: NodePath):
@@ -28,7 +27,7 @@ static func remove_node_path(anim_player: AnimationPlayer, node_path: NodePath):
 
 	var callback := func(animation: Animation):
 		var count := 0
-		for i in range(animation.get_track_count() - 1, 0, -1):
+		for i in range(animation.get_track_count() - 1, -1, -1):
 			var path = animation.track_get_path(i)
 			if NodePath(path.get_concatenated_names()) == node_path:
 				animation.remove_track(i)
@@ -62,7 +61,7 @@ static func rename_track_path(anim_player: AnimationPlayer, old: NodePath, new: 
 static func remove_track_path(anim_player: AnimationPlayer, property_path: NodePath):
 	var callback := func(animation: Animation):
 		var count = 0
-		for i in range(animation.get_track_count() - 1, 0, -1):
+		for i in range(animation.get_track_count() - 1, -1, -1):
 			var path = animation.track_get_path(i)
 			if path == property_path:
 				animation.remove_track(i)
