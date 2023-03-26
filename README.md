@@ -1,12 +1,18 @@
 # Animation Player Refactor
-A Godot addon to easily refactor Animation Player tracks.
+A Godot addon for refactoring animations for the `AnimationPlayer`. 
+
+Edit property references, delete tracks, and even change the root node of the Animation Player without breaking all the path references. No need to manually update every single track everytime you move or rename a node and properties in the scene.
+
 
 
 ## Features
- - Rename value tracks/methods/nodes
- - Delete tracks/nodes
- - Change root node
- - Mark invalid properties/nodes
+ - Adds a "Refactor" menu option to the animation dock
+ - Rename tracks and properties
+ - Delete tracks and properties
+ - Change the root node path of the `AnimationPlayer`
+ - Marks invalid properties/nodes
+
+📄 Note that this addon only refactor *Animations*, so deleting or renaming node does not affect the actual nodes. It is recommended to move/rename the actual nodes first, and then use the plugin to fix broken animations.
 
 ⚠️ Please make sure to use proper version control with this addon, since it is not possible to undo changes.
 
