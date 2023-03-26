@@ -7,6 +7,7 @@ const EditInfo := preload("edit_info.gd")
 
 @export var edittable_items := false
 
+
 func _ready() -> void:
 	reset_size()
 
@@ -34,31 +35,32 @@ func render(editor_plugin: EditorPlugin, anim_player: AnimationPlayer) -> void:
 
 			var edit_infos: Array[EditInfo] = []
 
-			if not property_path.is_empty():
-				edit_infos.append(EditInfo.new(EditInfo.Type.VALUE_TRACK, path, node_path, node))
-
 			if not node_path in track_paths:
 				track_paths[node_path] = {}
 
 			match type:
-				Animation.TYPE_VALUE:
-					pass
 				Animation.TYPE_METHOD:
 					for j in animation.track_get_key_count(i):
-						edit_infos.append(
-							EditInfo.new(
-								EditInfo.Type.METHOD_TRACK,
-								NodePath(
-									(
-										path.get_concatenated_names()
-										+ ":"
-										+ animation.method_track_get_name(i, j)
-									)
-								),
-								node_path,
-								node
+						var method_path = NodePath(
+							(
+								path.get_concatenated_names()
+								+ ":"
+								+ animation.method_track_get_name(i, j)
 							)
 						)
+
+						var edit_info = EditInfo.new(
+							EditInfo.Type.METHOD_TRACK, method_path, node_path, node
+						)
+
+						edit_infos.append(edit_info)
+				_:
+					if not property_path.is_empty():
+						var edit_info = EditInfo.new(
+							EditInfo.Type.VALUE_TRACK, path, node_path, node
+						)
+
+						edit_infos.append(edit_info)
 
 			for info in edit_infos:
 				if not StringName(info.path) in track_paths[node_path]:
@@ -122,9 +124,7 @@ func render(editor_plugin: EditorPlugin, anim_player: AnimationPlayer) -> void:
 
 			if invalid:
 				property_item.set_custom_color(0, Color.RED)
-				property_item.set_tooltip_text(
-					0, "Possibly invalid value: %s" % info.path
-				)
+				property_item.set_tooltip_text(0, "Possibly invalid value: %s" % info.path)
 	rendered.emit()
 
 
