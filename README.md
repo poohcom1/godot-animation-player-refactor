@@ -22,3 +22,4 @@ Edit property references, delete tracks, and even change the root node of the An
 
 ![Refactor dialogue](screenshots/refactor-dialogue.png)
 
+<a href="https://www.flaticon.com/free-icons/refactoring" title="refactoring icons">Refactoring icons created by Freepik - Flaticon</a>
