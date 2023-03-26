@@ -1,4 +1,4 @@
-# Animation Player Refactor
+# <img src="icon.png" height="32px" /> Animation Player Refactor
 A Godot addon for refactoring animations for the `AnimationPlayer`. 
 
 Edit property references, delete tracks, and even change the root node of the Animation Player without breaking all the path references. No need to manually update every single track everytime you move or rename a node and properties in the scene.
@@ -22,4 +22,6 @@ Edit property references, delete tracks, and even change the root node of the An
 
 ![Refactor dialogue](screenshots/refactor-dialogue.png)
 
-<a href="https://www.flaticon.com/free-icons/refactoring" title="refactoring icons">Refactoring icons created by Freepik - Flaticon</a>
+<hr />
+
+<a href="https://www.flaticon.com/free-icons/refactoring" title="refactoring icons">Logo icon created by Freepik - Flaticon</a>
