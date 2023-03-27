@@ -23,7 +23,7 @@ func _enter_tree() -> void:
 	get_editor_interface().get_base_control().add_child(refactor_dialogue)
 	refactor_dialogue.init(self)
 	# Create menu button
-	add_refactor_option(func(): 
+	_add_refactor_option(func(): 
 		refactor_dialogue.popup_centered()
 		refactor_dialogue.reset_size()
 	)
@@ -34,7 +34,7 @@ func _exit_tree() -> void:
 		get_editor_interface().get_base_control().remove_child(refactor_dialogue)
 		refactor_dialogue.queue_free()
 
-	remove_refactor_option()
+	_remove_refactor_option()
 
 
 func _handles(object: Object) -> bool:
@@ -75,7 +75,7 @@ func get_anim_player() -> AnimationPlayer:
 
 
 # Plugin buttons
-func add_refactor_option(on_pressed: Callable):
+func _add_refactor_option(on_pressed: Callable):
 	var base_control := get_editor_interface().get_base_control()
 	if not anim_menu_button:
 		anim_menu_button = EditorUtil.find_animation_menu_button(base_control)
@@ -86,7 +86,7 @@ func add_refactor_option(on_pressed: Callable):
 	anim_menu_button.get_popup().index_pressed.connect(_on_menu_button_pressed)
 
 
-func remove_refactor_option():
+func _remove_refactor_option():
 	var base_control := get_editor_interface().get_base_control()
 	
 	var item_count := anim_menu_button.get_popup().item_count

@@ -1,8 +1,12 @@
 ## Core utility class to handle all refactoring logic
 
-# Nodes
+var _undo_redo: EditorUndoRedoManager
 
-static func rename_node_path(anim_player: AnimationPlayer, old: NodePath, new: NodePath):
+func _init(undo_redo) -> void:
+	_undo_redo = undo_redo
+
+# Nodes
+func rename_node_path(anim_player: AnimationPlayer, old: NodePath, new: NodePath):
 	if old == new:
 		return
 
@@ -18,12 +22,10 @@ static func rename_node_path(anim_player: AnimationPlayer, old: NodePath, new: N
 				count += 1
 		return count
 
-	var count = recurse_animations(anim_player, callback)
-
-	print("[Animation Refactor] Renamed %d tracks." % count)
+	edit_animations(anim_player, callback, "Refactored node tracks")
 
 
-static func remove_node_path(anim_player: AnimationPlayer, node_path: NodePath):
+func remove_node_path(anim_player: AnimationPlayer, node_path: NodePath):
 
 	var callback := func(animation: Animation):
 		var count := 0
@@ -34,13 +36,11 @@ static func remove_node_path(anim_player: AnimationPlayer, node_path: NodePath):
 				count += 1
 		return count
 
-	var count = recurse_animations(anim_player, callback)
-
-	print("[Animation Refactor] Removed %d tracks." % count)
+	edit_animations(anim_player, callback, "Remove node tracks")
 
 # Tracks
 
-static func rename_track_path(anim_player: AnimationPlayer, old: NodePath, new: NodePath):
+func rename_track_path(anim_player: AnimationPlayer, old: NodePath, new: NodePath):
 	if old == new:
 		return
 
@@ -53,12 +53,10 @@ static func rename_track_path(anim_player: AnimationPlayer, old: NodePath, new: 
 				count += 1
 		return count
 
-	var count = recurse_animations(anim_player, callback)
-
-	print("[Animation Refactor] Renamed %d tracks!" % count)
+	edit_animations(anim_player, callback, "Refactored track paths")
 
 
-static func remove_track_path(anim_player: AnimationPlayer, property_path: NodePath):
+func remove_track_path(anim_player: AnimationPlayer, property_path: NodePath):
 	var callback := func(animation: Animation):
 		var count = 0
 		for i in range(animation.get_track_count() - 1, -1, -1):
@@ -68,13 +66,11 @@ static func remove_track_path(anim_player: AnimationPlayer, property_path: NodeP
 				count += 1
 		return count
 	
-	var count = recurse_animations(anim_player, callback)
-
-	print("[Animation Refactor] Removed %d tracks!" % count)
+	edit_animations(anim_player, callback, "Removed tracks")
 
 
 # Method tracks
-static func rename_method(anim_player, old: NodePath, new: NodePath):
+func rename_method(anim_player, old: NodePath, new: NodePath):
 	if old == new:
 		return
 
@@ -102,17 +98,29 @@ static func rename_method(anim_player, old: NodePath, new: NodePath):
 
 		return count
 
-	var count = recurse_animations(anim_player, callback)
-
-	print("[Animation Refactor] Renamed %d method keys!" % count)
+	edit_animations(anim_player, callback, "Renamed method keys")
 
 
-static func remove_method(anim_player: AnimationPlayer, method_path: NodePath):
-	pass
+func remove_method(anim_player: AnimationPlayer, method_path: NodePath):
+	var callback = func(animation: Animation):
+		var count := 0
+		for i in animation.get_track_count():
+			if (
+				animation.track_get_type(i) == Animation.TYPE_METHOD
+				and StringName(animation.track_get_path(i)) == method_path.get_concatenated_names()
+			):
+				for j in range(animation.track_get_key_count(i) - 1, -1, -1):
+					var name := animation.method_track_get_name(i, j)
+					if name == method_path.get_concatenated_subnames():
+						animation.track_remove_key(i, j)
+						count += 1
+		return count
+
+	edit_animations(anim_player, callback, "Renamed method keys")
 
 
 # Root
-static func change_root(anim_player: AnimationPlayer, new_path: NodePath):
+func change_root(anim_player: AnimationPlayer, new_path: NodePath):
 	var current_root: Node = anim_player.get_node(anim_player.root_node)
 	var new_root: Node = anim_player.get_node_or_null(new_path)
 
@@ -133,32 +141,48 @@ static func change_root(anim_player: AnimationPlayer, new_path: NodePath):
 			animation.track_set_path(i, updated_path)
 		return count
 
-	recurse_animations(anim_player, callback)
+	edit_animations(anim_player, callback)
 	anim_player.root_node = new_path
 	print("[Animation Refactor] Changed root to %s" % new_root.name)
 
 
-# Helper
+# Helper methods
 
-## Helper method to recurse through all animations and save when edited
+## Edit animations and store history
 ## 	callback: (Animation) -> int
 ##		- Returns number of animation changed
-static func recurse_animations(anim_player: AnimationPlayer, callback: Callable) -> int:
-	var changed := 0
-	for lib_name in anim_player.get_animation_library_list():
-		var lib_changed := false
-		var lib := anim_player.get_animation_library(lib_name)
+func edit_animations(
+		anim_player: AnimationPlayer, 
+		callback: Callable, 
+		commit_msg := "Refactor animations",
+		extra_actions: Array[Callable] = []
+	) -> void:
+	# Get snapshot of previous animations
+	var previous_states: Dictionary = anim_player.get("libraries").duplicate(true)
+	var new_states := _recurse_animations(anim_player, callback)
+	
+	# Commit undo history
+	_undo_redo.create_action(commit_msg, UndoRedo.MERGE_ALL, anim_player)
+	
+	_undo_redo.add_do_property(anim_player, "libraries", new_states)
+	_undo_redo.add_undo_property(anim_player, "libraries", previous_states)
 
+	for action in extra_actions:
+		action.call()
+
+	_undo_redo.commit_action()
+
+
+func _recurse_animations(anim_player: AnimationPlayer, callback: Callable) -> Dictionary:
+	var libs := {}
+	
+	for lib_name in anim_player.get_animation_library_list():
+		var lib: AnimationLibrary = anim_player.get_animation_library(lib_name)
+		var key := str(lib_name)
+		libs[key] = AnimationLibrary.new()
+		
 		for animation_name in lib.get_animation_list():
-			var animation := lib.get_animation(animation_name)
-			var count = callback.call(animation)
-			if count is int: # Possibly null
-				changed += count
-			try_save_resource(animation)
-		try_save_resource(lib)
-	return changed
-		
-		
-static func try_save_resource(res: Resource):
-	if not res.resource_path.is_empty() and not "::" in res.resource_path:
-		ResourceSaver.save(res, res.resource_path)
+			var animation := lib.get_animation(animation_name).duplicate(true)
+			callback.call(animation)
+			libs[key].add_animation(animation_name, animation)
+	return libs

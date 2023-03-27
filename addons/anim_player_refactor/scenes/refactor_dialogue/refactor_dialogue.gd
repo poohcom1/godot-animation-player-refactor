@@ -11,9 +11,10 @@ const NodeSelect := preload("components/node_select.gd")
 
 var _editor_plugin: CustomEditorPlugin
 var _editor_interface: EditorInterface
+var _anim_player_refactor: AnimPlayerRefactor
 var _anim_player: AnimationPlayer
 
-@onready var tree: AnimPlayerTree = $%AnimPlayerTree
+@onready var anim_player_tree: AnimPlayerTree = $%AnimPlayerTree
 
 @onready var root_node_tree: Tree = $%RootNodeTree
 
@@ -36,6 +37,7 @@ var is_full_path: bool:
 func init(editor_plugin: CustomEditorPlugin) -> void:
 	_editor_plugin = editor_plugin
 	_editor_interface = editor_plugin.get_editor_interface()
+	_anim_player_refactor = AnimPlayerRefactor.new(_editor_plugin.get_undo_redo())
 	node_select.init(_editor_plugin)
 
 
@@ -52,7 +54,7 @@ func render():
 		return
 
 	# Render track tree
-	tree.render(_editor_plugin, _anim_player)
+	anim_player_tree.render(_editor_plugin, _anim_player)
 
 	# Render root node tree
 	var root_node: Node = _anim_player.get_node(_anim_player.root_node)
@@ -75,18 +77,29 @@ func render():
 
 
 # Rename
+enum Action { Rename, Delete }
 var _current_info: EditInfo
+
+func _on_tree_activated():
+	_current_info = anim_player_tree.get_selected().get_metadata(0)
+	_on_action(Action.Rename)
+
+
 func _on_tree_button_clicked(item: TreeItem, column: int, id: int, mouse_button_index: int):
 	_current_info = item.get_metadata(column)
-
 	if id == 0:
-		# Rename
+		_on_action(Action.Rename)
+	elif id == 1:
+		_on_action(Action.Delete)
+
+
+func _on_action(action: Action):
+	if action == Action.Rename:
 		_render_edit_dialogue()
 		edit_dialogue.popup_centered()
 		edit_dialogue_input.grab_focus()
-		edit_dialogue_input.select_all()
-	elif id == 1:
-		# Remove
+		edit_dialogue_input.caret_column = edit_dialogue_input.text.length()
+	elif action == Action.Delete:
 		var track_path = _current_info.path
 		var anim_player = _editor_plugin.get_anim_player()
 		var node = anim_player\
@@ -163,19 +176,19 @@ func _on_rename_confirmed(_arg0 = null):
 			for i in range(info.path.get_name_count() - 1):
 				new_path += info.path.get_name(i) + "/"
 			new_path += new
-		AnimPlayerRefactor.rename_node_path(_anim_player, old, NodePath(new))
+		_anim_player_refactor.rename_node_path(_anim_player, old, NodePath(new))
 	elif info.type == EditInfo.Type.VALUE_TRACK:
 		var old_path := info.path
 		var new_path := NodePath(new)
 		if not is_full_path:
 			new_path = info.node_path.get_concatenated_names() + ":" + new
-		AnimPlayerRefactor.rename_track_path(_anim_player, old_path, new_path)
+		_anim_player_refactor.rename_track_path(_anim_player, old_path, new_path)
 	elif info.type == EditInfo.Type.METHOD_TRACK:
 		var old_method := info.path
 		var new_method := NodePath(
 			info.path.get_concatenated_names() + ":" + new
 		)
-		AnimPlayerRefactor.rename_method(_anim_player, old_method, new_method)
+		_anim_player_refactor.rename_method(_anim_player, old_method, new_method)
 	await get_tree().create_timer(0.1).timeout
 	render()
 
@@ -184,12 +197,11 @@ func _remove():
 	var info: EditInfo = _current_info
 	match info.type:
 		EditInfo.Type.NODE:
-			AnimPlayerRefactor.remove_node_path(_anim_player, info.node_path)
+			_anim_player_refactor.remove_node_path(_anim_player, info.node_path)
 		EditInfo.Type.VALUE_TRACK:
-			AnimPlayerRefactor.remove_track_path(_anim_player, info.path)
+			_anim_player_refactor.remove_track_path(_anim_player, info.path)
 		EditInfo.Type.METHOD_TRACK:
-			pass
-			# AnimPlayerRefactor.remove_method(_anim_player, info.node_path, old_method, new_method)
+			_anim_player_refactor.remove_method(_anim_player, info.path)
 	await get_tree().create_timer(0.1).timeout
 	render()
 
@@ -203,7 +215,7 @@ func _on_change_root_pressed():
 func _on_node_select_confirmed():
 	var path: NodePath = node_select.get_selected().get_metadata(0)
 
-	AnimPlayerRefactor.change_root(_editor_plugin.get_anim_player(), path)
+	_anim_player_refactor.change_root(_editor_plugin.get_anim_player(), path)
 
 	await get_tree().create_timer(0.1).timeout
 	render()
@@ -217,5 +229,4 @@ func _show_confirmation(text: String, on_confirmed: Callable):
 	confirmation_dialogue.confirmed.connect(on_confirmed)
 	confirmation_dialogue.popup_centered()
 	confirmation_dialogue.dialog_text = text
-
 
