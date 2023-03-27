@@ -22,7 +22,7 @@ func rename_node_path(anim_player: AnimationPlayer, old: NodePath, new: NodePath
 				count += 1
 		return count
 
-	edit_animations(anim_player, callback, "Refactored node tracks")
+	edit_animations(anim_player, callback, "Refactor node tracks")
 
 
 func remove_node_path(anim_player: AnimationPlayer, node_path: NodePath):
@@ -53,7 +53,7 @@ func rename_track_path(anim_player: AnimationPlayer, old: NodePath, new: NodePat
 				count += 1
 		return count
 
-	edit_animations(anim_player, callback, "Refactored track paths")
+	edit_animations(anim_player, callback, "Refactor track paths")
 
 
 func remove_track_path(anim_player: AnimationPlayer, property_path: NodePath):
@@ -66,7 +66,7 @@ func remove_track_path(anim_player: AnimationPlayer, property_path: NodePath):
 				count += 1
 		return count
 	
-	edit_animations(anim_player, callback, "Removed tracks")
+	edit_animations(anim_player, callback, "Remove tracks")
 
 
 # Method tracks
@@ -98,7 +98,7 @@ func rename_method(anim_player, old: NodePath, new: NodePath):
 
 		return count
 
-	edit_animations(anim_player, callback, "Renamed method keys")
+	edit_animations(anim_player, callback, "Rename method keys")
 
 
 func remove_method(anim_player: AnimationPlayer, method_path: NodePath):
@@ -116,7 +116,7 @@ func remove_method(anim_player: AnimationPlayer, method_path: NodePath):
 						count += 1
 		return count
 
-	edit_animations(anim_player, callback, "Renamed method keys")
+	edit_animations(anim_player, callback, "Remove method keys")
 
 
 # Root
