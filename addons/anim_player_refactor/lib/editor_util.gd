@@ -4,16 +4,22 @@
 static func find_animation_menu_button(node: Node) -> MenuButton:
 	var animation_editor := find_editor_control_with_class(node, "AnimationPlayerEditor")
 	if animation_editor:
-		for child in animation_editor.get_children():
-			if child is MenuButton and child.text == "Animation":
-				return child
+		return find_editor_control_with_class(
+			animation_editor, 
+			"MenuButton", 
+			func(node): return node.text == "Animation"
+		)
 
 	return null
 
 
 ## General utility to find a control in the editor using an iterative search
-static func find_editor_control_with_class(base: Control, p_class_name: StringName) -> Node:
-	if base.get_class() == p_class_name:
+static func find_editor_control_with_class(
+		base: Control, 
+		p_class_name: StringName,
+		condition := func(node: Node): return true
+	) -> Node:
+	if base.get_class() == p_class_name and condition.call(base):
 		return base
 		
 	for child in base.get_children():

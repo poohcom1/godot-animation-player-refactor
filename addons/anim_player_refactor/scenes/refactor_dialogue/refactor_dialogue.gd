@@ -17,7 +17,6 @@ var _anim_player: AnimationPlayer
 
 @onready var anim_player_tree: AnimPlayerTree = $%AnimPlayerTree
 
-@onready var root_node_tree: Tree = $%RootNodeTree
 @onready var change_root: Button = $%ChangeRoot
 
 @onready var edit_dialogue: ConfirmationDialog = $%EditDialogue

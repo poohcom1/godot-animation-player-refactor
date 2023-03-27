@@ -1,14 +1,14 @@
 [gd_scene load_steps=4 format=3 uid="uid://cyfxysds8uhnx"]
 
-[ext_resource type="Script" path="res://addons/anim_player_refactor/scenes/refactor_dialogue/refactor_dialogue.gd" id="1_4tkdp"]
+[ext_resource type="Script" path="res://addons/anim_player_refactor/scenes/refactor_dialogue/refactor_dialogue.gd" id="1_nkqdl"]
 [ext_resource type="Script" path="res://addons/anim_player_refactor/scenes/refactor_dialogue/components/anim_player_tree.gd" id="2_7pqfs"]
 [ext_resource type="Script" path="res://addons/anim_player_refactor/scenes/refactor_dialogue/components/node_select.gd" id="3_87x4i"]
 
 [node name="RefactorDialogue" type="AcceptDialog"]
 title = "Refactor Animations"
-size = Vector2i(316, 599)
+size = Vector2i(400, 599)
 ok_button_text = "Close"
-script = ExtResource("1_4tkdp")
+script = ExtResource("1_nkqdl")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 offset_left = 8.0
