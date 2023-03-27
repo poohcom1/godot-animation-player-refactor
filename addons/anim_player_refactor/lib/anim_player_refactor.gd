@@ -152,17 +152,16 @@ func change_root(anim_player: AnimationPlayer, new_path: NodePath):
 # Helper methods
 
 ## Edit animations and store history
-## 	callback: (Animation) -> int
-##		- Returns number of animation changed
+## 	callback: (Animation) -> void
 func edit_animations(
 		anim_player: AnimationPlayer, 
 		callback: Callable, 
-		commit_msg := "Refactor animations",
+		commit_msg: String,
 		extra_actions: Array[Callable] = []
 	) -> void:
 	# Get snapshot of previous animations
 	var previous_states: Dictionary = anim_player.get("libraries").duplicate(true)
-	var new_states := _recurse_animations(anim_player, callback)
+	var new_states := _edit_animations(anim_player, callback)
 	
 	# Commit undo history
 	_undo_redo.create_action(commit_msg, UndoRedo.MERGE_ALL, anim_player)
@@ -176,7 +175,8 @@ func edit_animations(
 	_undo_redo.commit_action()
 
 
-func _recurse_animations(anim_player: AnimationPlayer, callback: Callable) -> Dictionary:
+## Edits all animation with callback and returns the updated libraries
+func _edit_animations(anim_player: AnimationPlayer, callback: Callable) -> Dictionary:
 	var libs := {}
 	
 	for lib_name in anim_player.get_animation_library_list():

@@ -14,7 +14,7 @@ Edit property references, delete tracks, and even change the root node of the An
 
 📄 Note that this addon only refactor *Animations*, so deleting or renaming node does not affect the actual nodes. It is recommended to move/rename the actual nodes first, and then use the plugin to fix broken animations.
 
-⚠️ Please make sure to use proper version control with this addon, since it is not possible to undo changes.
+⚠️ Please make sure to use proper version control with this addon to prevent losing changes.
 
 ## Screenshots
 
