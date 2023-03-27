@@ -1,21 +1,17 @@
 # Utility class for parsing and hacking the editor
 
+## Find menu button to add option to
 static func find_animation_menu_button(node: Node) -> MenuButton:
-	if node is MenuButton and node.text == "Animation":
-		return node
-	
-	for child in node.get_children():
-		# Not sure if this helps to prevent checking the actual scene tree
-		if not child is Control:
-			continue
-		
-		var menu_button = find_animation_menu_button(child)
-		if menu_button:
-			return menu_button
-		
+	var animation_editor := find_editor_control_with_class(node, "AnimationPlayerEditor")
+	if animation_editor:
+		for child in animation_editor.get_children():
+			if child is MenuButton and child.text == "Animation":
+				return child
+
 	return null
 
 
+## General utility to find a control in the editor using an iterative search
 static func find_editor_control_with_class(base: Control, p_class_name: StringName) -> Node:
 	if base.get_class() == p_class_name:
 		return base

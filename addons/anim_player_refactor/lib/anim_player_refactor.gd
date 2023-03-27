@@ -140,10 +140,13 @@ func change_root(anim_player: AnimationPlayer, new_path: NodePath):
 			var updated_path = str(new_root.get_path_to(node)) + ":" + path.get_concatenated_subnames()
 			animation.track_set_path(i, updated_path)
 		return count
+		
+	var change_root_callback := func():
+		_undo_redo.add_do_property(anim_player, "root_node", new_path)
+		_undo_redo.add_undo_property(anim_player, "root_node", anim_player.root_node)
 
-	edit_animations(anim_player, callback)
-	anim_player.root_node = new_path
-	print("[Animation Refactor] Changed root to %s" % new_root.name)
+	edit_animations(anim_player, callback, "Changed animation player root", [change_root_callback])
+	
 
 
 # Helper methods

@@ -51,18 +51,10 @@ text = "Root Node"
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/RootNodeContainer"]
 layout_mode = 2
 
-[node name="RootNodeTree" type="Tree" parent="VBoxContainer/RootNodeContainer/HBoxContainer"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 16)
-layout_mode = 2
-size_flags_horizontal = 3
-scroll_horizontal_enabled = false
-scroll_vertical_enabled = false
-
 [node name="ChangeRoot" type="Button" parent="VBoxContainer/RootNodeContainer/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 8
+size_flags_horizontal = 3
 text = "Change Root"
 
 [node name="EditDialogue" type="ConfirmationDialog" parent="."]
@@ -98,6 +90,7 @@ text = "Edit full path"
 [node name="NodeSelectDialogue" type="ConfirmationDialog" parent="."]
 unique_name_in_owner = true
 title = "Select a node..."
+size = Vector2i(616, 557)
 ok_button_text = "Change"
 
 [node name="NodeSelect" type="Tree" parent="NodeSelectDialogue"]
@@ -105,19 +98,21 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(600, 500)
 offset_left = 8.0
 offset_top = 8.0
-offset_right = 592.0
-offset_bottom = 451.0
+offset_right = 608.0
+offset_bottom = 508.0
 scroll_horizontal_enabled = false
 script = ExtResource("3_87x4i")
 
 [node name="ConfirmationDialog" type="ConfirmationDialog" parent="."]
 unique_name_in_owner = true
+size = Vector2i(300, 200)
 ok_button_text = "Delete"
 dialog_autowrap = true
 
 [connection signal="about_to_popup" from="." to="VBoxContainer/TreeContainer/FilterInput" method="clear"]
 [connection signal="text_changed" from="VBoxContainer/TreeContainer/FilterInput" to="VBoxContainer/TreeContainer/AnimPlayerTree" method="set_filter"]
 [connection signal="button_clicked" from="VBoxContainer/TreeContainer/AnimPlayerTree" to="." method="_on_tree_button_clicked"]
+[connection signal="item_activated" from="VBoxContainer/TreeContainer/AnimPlayerTree" to="." method="_on_tree_activated"]
 [connection signal="rendered" from="VBoxContainer/TreeContainer/AnimPlayerTree" to="VBoxContainer/TreeContainer/FilterInput" method="clear"]
 [connection signal="pressed" from="VBoxContainer/RootNodeContainer/HBoxContainer/ChangeRoot" to="." method="_on_change_root_pressed"]
 [connection signal="confirmed" from="EditDialogue" to="." method="_on_rename_confirmed"]

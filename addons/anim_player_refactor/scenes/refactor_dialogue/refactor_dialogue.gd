@@ -2,6 +2,7 @@
 extends AcceptDialog
 
 const CustomEditorPlugin := preload("res://addons/anim_player_refactor/plugin.gd")
+const EditorUtil := preload("res://addons/anim_player_refactor/lib/editor_util.gd")
 
 const AnimPlayerRefactor = preload("res://addons/anim_player_refactor/lib/anim_player_refactor.gd")
 const AnimPlayerTree := preload("components/anim_player_tree.gd")
@@ -17,6 +18,7 @@ var _anim_player: AnimationPlayer
 @onready var anim_player_tree: AnimPlayerTree = $%AnimPlayerTree
 
 @onready var root_node_tree: Tree = $%RootNodeTree
+@onready var change_root: Button = $%ChangeRoot
 
 @onready var edit_dialogue: ConfirmationDialog = $%EditDialogue
 @onready var edit_dialogue_input: LineEdit = $%EditInput
@@ -56,7 +58,7 @@ func render():
 	# Render track tree
 	anim_player_tree.render(_editor_plugin, _anim_player)
 
-	# Render root node tree
+	# Render root node button
 	var root_node: Node = _anim_player.get_node(_anim_player.root_node)
 	var node_path := str(_anim_player.owner.get_path_to(root_node))
 	if node_path == ".":
@@ -64,13 +66,9 @@ func render():
 	else:
 		node_path = _anim_player.owner.name + "/" + node_path
 
-	root_node_tree.clear()
-	var root_node_item = root_node_tree.create_item()
-	root_node_item.custom_minimum_height = root_node_tree.custom_minimum_size.y
-	root_node_item.set_selectable(0, false)
-	root_node_item.set_text(0, node_path)
-	root_node_item.set_icon(
-		0, _editor_interface.get_base_control().get_theme_icon(root_node.get_class(), "EditorIcons")
+	change_root.text = "%s (Change)" % node_path
+	change_root.icon = _editor_interface.get_base_control().get_theme_icon(
+		root_node.get_class(), "EditorIcons"
 	)
 
 	reset_size()
@@ -112,10 +110,12 @@ func _on_action(action: Action):
 			if not property.is_empty():
 				track_path += ":" + property
 		
-		_show_confirmation(
-			"Are you sure you want to delete tracks '%s'?" % track_path,
-			_remove
-		)
+		var msg = 'Delete all tracks with the path "%s"?' % track_path
+		
+		if _current_info.type == EditInfo.Type.NODE:
+			msg = 'Delete tracks belonging to the node "%s"?' % track_path
+		
+		_show_confirmation(msg, _remove)
 
 
 func _render_edit_dialogue():
@@ -215,7 +215,15 @@ func _on_change_root_pressed():
 func _on_node_select_confirmed():
 	var path: NodePath = node_select.get_selected().get_metadata(0)
 
+	# Hide bottom panel while changeing root to prevent error messages
+	_editor_plugin.hide_bottom_panel()
 	_anim_player_refactor.change_root(_editor_plugin.get_anim_player(), path)
+	_editor_plugin.make_bottom_panel_item_visible(
+		EditorUtil.find_editor_control_with_class(
+			_editor_interface.get_base_control(),
+			"AnimationPlayerEditor"
+		)
+	)
 
 	await get_tree().create_timer(0.1).timeout
 	render()
