@@ -21,9 +21,11 @@ Adds a "Refactor" menu option to the animation panel, with the following feature
 ## Screenshots
 
 Menu options:
+
 ![New menu option](screenshots/new-menu-option.png)
 
 Changing root node:
+
 ![Change root node](screenshots/change-root-node.png)
 
 <hr />
