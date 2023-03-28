@@ -1,9 +1,13 @@
 ## Core utility class to handle all refactoring logic
 
+const EditorUtil := preload("res://addons/anim_player_refactor/lib/editor_util.gd")
+
+var _editor_plugin: EditorPlugin
 var _undo_redo: EditorUndoRedoManager
 
-func _init(undo_redo) -> void:
-	_undo_redo = undo_redo
+func _init(editor_plugin: EditorPlugin) -> void:
+	_editor_plugin = editor_plugin
+	_undo_redo = editor_plugin.get_undo_redo()
 
 # Nodes
 func rename_node_path(anim_player: AnimationPlayer, old: NodePath, new: NodePath):
@@ -163,6 +167,8 @@ func edit_animations(
 	var previous_states: Dictionary = anim_player.get("libraries").duplicate(true)
 	var new_states := _edit_animations(anim_player, callback)
 	
+	# Hide bottom panel
+	_editor_plugin.hide_bottom_panel()
 	# Commit undo history
 	_undo_redo.create_action(commit_msg, UndoRedo.MERGE_ALL, anim_player)
 	
@@ -173,6 +179,14 @@ func edit_animations(
 		action.call()
 
 	_undo_redo.commit_action()
+
+	# Show bottom panel
+	_editor_plugin.make_bottom_panel_item_visible(
+		EditorUtil.find_editor_control_with_class(
+			_editor_plugin.get_editor_interface().get_base_control(),
+			"AnimationPlayerEditor"
+		)
+	)
 
 
 ## Edits all animation with callback and returns the updated libraries

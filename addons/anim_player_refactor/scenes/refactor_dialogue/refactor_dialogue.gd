@@ -38,7 +38,7 @@ var is_full_path: bool:
 func init(editor_plugin: CustomEditorPlugin) -> void:
 	_editor_plugin = editor_plugin
 	_editor_interface = editor_plugin.get_editor_interface()
-	_anim_player_refactor = AnimPlayerRefactor.new(_editor_plugin.get_undo_redo())
+	_anim_player_refactor = AnimPlayerRefactor.new(_editor_plugin)
 	node_select.init(_editor_plugin)
 
 
@@ -69,8 +69,6 @@ func render():
 	change_root.icon = _editor_interface.get_base_control().get_theme_icon(
 		root_node.get_class(), "EditorIcons"
 	)
-
-	reset_size()
 
 
 # Rename
@@ -216,15 +214,7 @@ func _on_change_root_pressed():
 func _on_node_select_confirmed():
 	var path: NodePath = node_select.get_selected().get_metadata(0)
 
-	# Hide bottom panel while changeing root to prevent error messages
-	_editor_plugin.hide_bottom_panel()
 	_anim_player_refactor.change_root(_editor_plugin.get_anim_player(), path)
-	_editor_plugin.make_bottom_panel_item_visible(
-		EditorUtil.find_editor_control_with_class(
-			_editor_interface.get_base_control(),
-			"AnimationPlayerEditor"
-		)
-	)
 
 	await get_tree().create_timer(0.1).timeout
 	render()
