@@ -123,8 +123,10 @@ func _render_edit_dialogue():
 	if info.type == EditInfo.Type.METHOD_TRACK:
 		is_full_path = false
 		edit_full_path_toggle.disabled = true
+		edit_full_path_toggle.visible = false
 	else:
 		edit_full_path_toggle.disabled = false
+		edit_full_path_toggle.visible = true
 	
 	if is_full_path:
 		edit_dialogue_input.text = info.path
@@ -233,7 +235,7 @@ func _show_confirmation(text: String, on_confirmed: Callable):
 	for c in confirmation_dialogue.confirmed.get_connections():
 		confirmation_dialogue.confirmed.disconnect(c.callable)
 
-	confirmation_dialogue.confirmed.connect(on_confirmed)
+	confirmation_dialogue.confirmed.connect(on_confirmed, CONNECT_ONE_SHOT)
 	confirmation_dialogue.popup_centered()
 	confirmation_dialogue.dialog_text = text
 
