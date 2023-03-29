@@ -1,6 +1,6 @@
 # <img src="icon.png" height="32px" /> Animation Player Refactor
 
-[<img src="https://img.shields.io/static/v1?label=GODOT&message=Asset%20Library&color=478CBF&labelColor=FFFFFF&style=for-the-badge&logo=godotengine">](https://godotengine.org/asset-library/asset/1777)
+[<img src="https://img.shields.io/static/v1?label=GODOT%204.0&message=Asset%20Library&color=478CBF&labelColor=FFFFFF&style=for-the-badge&logo=godotengine">](https://godotengine.org/asset-library/asset/1777)
 
 A Godot addon for refactoring animations for the `AnimationPlayer`. 
 
