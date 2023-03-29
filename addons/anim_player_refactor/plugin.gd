@@ -1,7 +1,6 @@
 @tool
 extends EditorPlugin
 
-const RefactorDialogueScene := preload("scenes/refactor_dialogue/refactor_dialogue.tscn")
 const RefactorDialogue := preload("scenes/refactor_dialogue/refactor_dialogue.gd")
 
 const AnimPlayerInspectorButton := preload("scenes/inspector_button/inspector_button.gd")
@@ -19,7 +18,7 @@ var _scene_tree: Tree
 
 func _enter_tree() -> void:
 	# Create dialogue
-	refactor_dialogue = RefactorDialogueScene.instantiate()
+	refactor_dialogue = load("res://addons/anim_player_refactor/scenes/refactor_dialogue/refactor_dialogue.tscn").instantiate()
 	get_editor_interface().get_base_control().add_child(refactor_dialogue)
 	refactor_dialogue.init(self)
 	# Create menu button
