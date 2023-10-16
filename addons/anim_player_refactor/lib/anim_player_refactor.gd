@@ -14,8 +14,9 @@ func rename_node_path(anim_player: AnimationPlayer, old: NodePath, new: NodePath
 	if old == new:
 		return
 
-	var callback := func(animation: Animation):
-		var count := 0
+	_undo_redo.create_action("Refactor node tracks", UndoRedo.MERGE_ALL, anim_player)
+
+	_foreach_animation(anim_player, func(animation: Animation):
 		for i in animation.get_track_count():
 			var path := animation.track_get_path(i)
 			var node_path := path.get_concatenated_names()
@@ -23,55 +24,71 @@ func rename_node_path(anim_player: AnimationPlayer, old: NodePath, new: NodePath
 			if node_path == old.get_concatenated_names():
 				var new_path := new.get_concatenated_names() + ":" + path.get_concatenated_subnames()
 				animation.track_set_path(i, NodePath(new_path))
-				count += 1
-		return count
 
-	edit_animations(anim_player, callback, "Refactor node tracks")
+				_undo_redo.add_do_property(animation, "tracks/%d/path" % i, new_path)
+				_undo_redo.add_undo_property(animation, "tracks/%d/path" % i, path)
+	)
+
+	_undo_redo.commit_action()
 
 
 func remove_node_path(anim_player: AnimationPlayer, node_path: NodePath):
+	_undo_redo.create_action("Remove node tracks", UndoRedo.MERGE_ALL, anim_player)
+	
+	_foreach_animation_restore(anim_player, _undo_redo, func(animation: Animation):
+		var removed_tracks = 0
 
-	var callback := func(animation: Animation):
-		var count := 0
 		for i in range(animation.get_track_count() - 1, -1, -1):
 			var path = animation.track_get_path(i)
-			if NodePath(path.get_concatenated_names()) == node_path:
-				animation.remove_track(i)
-				count += 1
-		return count
 
-	edit_animations(anim_player, callback, "Remove node tracks")
+			if NodePath(path.get_concatenated_names()) == node_path:
+				removed_tracks += 1
+				_undo_redo.add_do_method(animation, &'remove_track', i)
+
+		return removed_tracks
+	)
+
+	_undo_redo.commit_action()
+	print("nice!!")
 
 # Tracks
-
 func rename_track_path(anim_player: AnimationPlayer, old: NodePath, new: NodePath):
 	if old == new:
 		return
 
-	var callback = func(animation: Animation):
-		var count := 0
+	_undo_redo.create_action("Refactor track paths", UndoRedo.MERGE_ALL, anim_player)
+
+	_foreach_animation(anim_player, func(animation: Animation):
 		for i in animation.get_track_count():
 			var path = animation.track_get_path(i)
+
 			if path == old:
 				animation.track_set_path(i, new)
-				count += 1
-		return count
 
-	edit_animations(anim_player, callback, "Refactor track paths")
+				_undo_redo.add_do_property(animation, "tracks/%d/path" % i, new)
+				_undo_redo.add_undo_property(animation, "tracks/%d/path" % i, old)
+	)
+
+	_undo_redo.commit_action()
 
 
 func remove_track_path(anim_player: AnimationPlayer, property_path: NodePath):
-	var callback := func(animation: Animation):
-		var count = 0
+	_undo_redo.create_action("Remove tracks", UndoRedo.MERGE_ALL, anim_player)
+
+	_foreach_animation_restore(anim_player, _undo_redo, func(animation: Animation):
+		var removed_tracks = 0
+
 		for i in range(animation.get_track_count() - 1, -1, -1):
 			var path = animation.track_get_path(i)
-			if path == property_path:
-				animation.remove_track(i)
-				count += 1
-		return count
-	
-	edit_animations(anim_player, callback, "Remove tracks")
 
+			if path == property_path:
+				removed_tracks += 1
+				_undo_redo.add_do_method(animation, &'remove_track', i)
+
+		return removed_tracks
+	)
+
+	_undo_redo.commit_action()
 
 # Method tracks
 func rename_method(anim_player, old: NodePath, new: NodePath):
@@ -82,32 +99,35 @@ func rename_method(anim_player, old: NodePath, new: NodePath):
 	var old_method := old.get_concatenated_subnames()
 	var new_method := new.get_concatenated_subnames()
 
-	var callback = func(animation: Animation):
-		var count := 0
+	_undo_redo.create_action("Rename method keys", UndoRedo.MERGE_ALL, anim_player)
+
+	_foreach_animation(anim_player, func(animation: Animation):
 		for i in animation.get_track_count():
-			if (
-				animation.track_get_type(i) == Animation.TYPE_METHOD
-				and animation.track_get_path(i) == node_path
-			):
+			if (animation.track_get_type(i) == Animation.TYPE_METHOD and animation.track_get_path(i) == node_path):
 				for j in animation.track_get_key_count(i):
 					var name := animation.method_track_get_name(i, j)
 					if name == old_method:
-						var method := {
-							"method": new_method,
+						var old_method_params := {
+							"method": old_method,
 							"args": animation.method_track_get_params(i, j)
 						}
 
-						animation.track_set_key_value(i, j, method)
-						count += 1
+						var method_params := {
+							"method": new_method,
+							"args": animation.method_track_get_params(i, j)
+						}
+						
+						_undo_redo.add_do_method(animation, &'track_set_key_value', i, j, method_params)
+						_undo_redo.add_undo_method(animation, &'track_set_key_value', i, j, old_method_params)
+	)
 
-		return count
-
-	edit_animations(anim_player, callback, "Rename method keys")
+	_undo_redo.commit_action()
 
 
 func remove_method(anim_player: AnimationPlayer, method_path: NodePath):
-	var callback = func(animation: Animation):
-		var count := 0
+	_undo_redo.create_action("Remove method keys", UndoRedo.MERGE_ALL, anim_player)
+	
+	_foreach_animation_restore(anim_player, _undo_redo, func(animation: Animation):
 		for i in animation.get_track_count():
 			if (
 				animation.track_get_type(i) == Animation.TYPE_METHOD
@@ -116,11 +136,11 @@ func remove_method(anim_player: AnimationPlayer, method_path: NodePath):
 				for j in range(animation.track_get_key_count(i) - 1, -1, -1):
 					var name := animation.method_track_get_name(i, j)
 					if name == method_path.get_concatenated_subnames():
-						animation.track_remove_key(i, j)
-						count += 1
-		return count
+						_undo_redo.add_do_method(animation, &'track_remove_key', i, j)
+		return 0
+	)
 
-	edit_animations(anim_player, callback, "Remove method keys")
+	_undo_redo.commit_action()
 
 
 # Root
@@ -131,8 +151,9 @@ func change_root(anim_player: AnimationPlayer, new_path: NodePath):
 	if new_root == null:
 		return
 
-	var callback := func(animation: Animation):
-		var count := 0
+	_undo_redo.create_action("Change animation player root", UndoRedo.MERGE_ALL, anim_player)
+
+	_foreach_animation(anim_player, func(animation: Animation):
 		for i in animation.get_track_count():
 			var path := animation.track_get_path(i)
 			var node := current_root.get_node_or_null(NodePath(path.get_concatenated_names()))
@@ -142,64 +163,45 @@ func change_root(anim_player: AnimationPlayer, new_path: NodePath):
 				continue
 			
 			var updated_path = str(new_root.get_path_to(node)) + ":" + path.get_concatenated_subnames()
-			animation.track_set_path(i, updated_path)
-		return count
-		
-	var change_root_callback := func():
-		_undo_redo.add_do_property(anim_player, "root_node", new_path)
-		_undo_redo.add_undo_property(anim_player, "root_node", anim_player.root_node)
 
-	edit_animations(anim_player, callback, "Changed animation player root", [change_root_callback])
+			_undo_redo.add_do_property(animation, "tracks/%d/path" % i, updated_path)
+			_undo_redo.add_undo_property(animation, "tracks/%d/path" % i, path)
+	)
+
+	_undo_redo.add_do_property(anim_player, "root_node", new_path)
+	_undo_redo.add_undo_property(anim_player, "root_node", anim_player.root_node)
+
+	_undo_redo.commit_action()
 	
 
 
 # Helper methods
 
-## Edit animations and store history
-## 	callback: (Animation) -> void
-func edit_animations(
-		anim_player: AnimationPlayer, 
-		callback: Callable, 
-		commit_msg: String,
-		extra_actions: Array[Callable] = []
-	) -> void:
-	# Get snapshot of previous animations
-	var previous_states: Dictionary = anim_player.get("libraries").duplicate(true)
-	var new_states := _edit_animations(anim_player, callback)
-	
-	# Hide bottom panel
-	_editor_plugin.hide_bottom_panel()
-	# Commit undo history
-	_undo_redo.create_action(commit_msg, UndoRedo.MERGE_ALL, anim_player)
-	
-	_undo_redo.add_do_property(anim_player, "libraries", new_states)
-	_undo_redo.add_undo_property(anim_player, "libraries", previous_states)
-
-	for action in extra_actions:
-		action.call()
-
-	_undo_redo.commit_action()
-
-	# Show bottom panel
-	_editor_plugin.make_bottom_panel_item_visible(
-		EditorUtil.find_editor_control_with_class(
-			_editor_plugin.get_editor_interface().get_base_control(),
-			"AnimationPlayerEditor"
-		)
-	)
-
-
-## Edits all animation with callback and returns the updated libraries
-func _edit_animations(anim_player: AnimationPlayer, callback: Callable) -> Dictionary:
-	var libs := {}
-	
+## Iterates over all animations in the animation player
+static func _foreach_animation(anim_player: AnimationPlayer, callback: Callable):
 	for lib_name in anim_player.get_animation_library_list():
-		var lib: AnimationLibrary = anim_player.get_animation_library(lib_name)
-		var key := str(lib_name)
-		libs[key] = AnimationLibrary.new()
-		
+		var lib := anim_player.get_animation_library(lib_name)
 		for animation_name in lib.get_animation_list():
-			var animation := lib.get_animation(animation_name).duplicate(true)
+			var animation := lib.get_animation(animation_name)
 			callback.call(animation)
-			libs[key].add_animation(animation_name, animation)
-	return libs
+
+
+## Iterates over all animations in the animation player and adds a full revert to the undo stack
+## Useful for do actions that remove tracks
+static func _foreach_animation_restore(anim_player: AnimationPlayer, undo_redo: EditorUndoRedoManager, callback: Callable):
+	for lib_name in anim_player.get_animation_library_list():
+		var lib := anim_player.get_animation_library(lib_name)
+		for animation_name in lib.get_animation_list():
+			var animation := lib.get_animation(animation_name)
+			
+			var old_anim := animation.duplicate(true)
+		
+			var removed_tracked = callback.call(animation)
+
+			for i in range(animation.get_track_count() - 1 - removed_tracked, -1, -1):
+				undo_redo.add_undo_method(animation, &'remove_track', i)
+
+			for i in range(old_anim.get_track_count()):
+				undo_redo.add_undo_method(old_anim, &'copy_track', i, animation)
+			
+			undo_redo.add_undo_reference(old_anim)

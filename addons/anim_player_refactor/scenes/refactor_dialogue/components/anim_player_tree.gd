@@ -137,23 +137,25 @@ func set_filter(filter: String):
 	# Post-order traversal
 	while not item_stack.is_empty():
 		var current: TreeItem = item_stack[item_stack.size() - 1]
+		var children = current.get_children() if current else []
 
 		var children_all_visited := true
 		var child_visible := false
 
-		for child in current.get_children():
+		for child in children:
 			children_all_visited = children_all_visited and child in visited
 			child_visible = child_visible or child.visible
 
 		if children_all_visited:
 			item_stack.pop_back()
-			if current == get_root() or filter.is_empty() or child_visible:
-				current.visible = true
-			else:
-				current.visible = current.get_text(0).to_lower().contains(filter.to_lower())
+			if current:
+				if current == get_root() or filter.is_empty() or child_visible:
+					current.visible = true
+				else:
+					current.visible = current.get_text(0).to_lower().contains(filter.to_lower())
 			visited.append(current)
 		else:
-			item_stack += current.get_children()
+			item_stack += children
 
 
 ## Class to cache heirarchy of nodes
