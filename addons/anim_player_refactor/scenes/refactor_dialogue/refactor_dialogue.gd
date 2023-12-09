@@ -23,6 +23,7 @@ var _anim_player: AnimationPlayer
 @onready var edit_dialogue_input: LineEdit = $%EditInput
 @onready var edit_dialogue_button: Button = $%EditDialogueButton # Just for pretty icon display
 @onready var edit_full_path_toggle: CheckButton = $%EditFullPathToggle
+@onready var edit_anim_list: Label = $%EditAnimationList
 
 @onready var node_select_dialogue: ConfirmationDialog = $%NodeSelectDialogue
 @onready var node_select: NodeSelect = $%NodeSelect
@@ -147,6 +148,9 @@ func _render_edit_dialogue():
 		edit_dialogue_button.icon = _editor_interface.get_base_control().get_theme_icon(
 			info.node.get_class(), "EditorIcons"
 		)
+	edit_anim_list.text = ""
+	for name in _current_info.animation_names:
+		edit_anim_list.text += " • " + name + "\n"
 
 
 ## Toggle full path and re-render edit dialogue

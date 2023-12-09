@@ -37,7 +37,6 @@ func render(editor_plugin: EditorPlugin, anim_player: AnimationPlayer) -> void:
 
 			if not node_path in track_paths:
 				track_paths[node_path] = {}
-
 			match type:
 				Animation.TYPE_METHOD:
 					for j in animation.track_get_key_count(i):
@@ -50,21 +49,26 @@ func render(editor_plugin: EditorPlugin, anim_player: AnimationPlayer) -> void:
 						)
 
 						var edit_info = EditInfo.new(
-							EditInfo.Type.METHOD_TRACK, method_path, node_path, node
+							EditInfo.Type.METHOD_TRACK, method_path, node_path, node, [anim_name]
 						)
 
 						edit_infos.append(edit_info)
 				_:
 					if not property_path.is_empty():
 						var edit_info = EditInfo.new(
-							EditInfo.Type.VALUE_TRACK, path, node_path, node
+							EditInfo.Type.VALUE_TRACK, path, node_path, node, [anim_name]
 						)
 
 						edit_infos.append(edit_info)
-
+			
+			# Combine
 			for info in edit_infos:
 				if not StringName(info.path) in track_paths[node_path]:
 					track_paths[node_path][StringName(info.path)] = info
+				else:
+					for name in info.animation_names:
+						if name in track_paths[node_path][StringName(info.path)].animation_names: continue
+						track_paths[node_path][StringName(info.path)].animation_names.append(name)
 
 	# Sort
 	var paths := track_paths.keys()
@@ -90,7 +94,7 @@ func render(editor_plugin: EditorPlugin, anim_player: AnimationPlayer) -> void:
 		else:
 			path_item.set_text(0, node.name if node else path)
 		path_item.set_icon(0, icon)
-		path_item.set_metadata(0, EditInfo.new(EditInfo.Type.NODE, path, path, node))
+		path_item.set_metadata(0, EditInfo.new(EditInfo.Type.NODE, path, path, node, []))
 		path_item.add_button(0, gui.get_theme_icon("Edit", "EditorIcons"))
 		path_item.add_button(0, gui.get_theme_icon("Remove", "EditorIcons"))
 
