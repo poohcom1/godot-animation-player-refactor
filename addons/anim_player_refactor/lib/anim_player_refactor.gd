@@ -49,7 +49,7 @@ func remove_node_path(anim_player: AnimationPlayer, node_path: NodePath):
 	)
 
 	_undo_redo.commit_action()
-	print("nice!!")
+
 
 # Tracks
 func rename_track_path(anim_player: AnimationPlayer, old: NodePath, new: NodePath):
