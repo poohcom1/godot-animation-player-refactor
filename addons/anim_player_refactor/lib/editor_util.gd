@@ -26,7 +26,7 @@ static func find_editor_control_with_class(
 		if not child is Control:
 			continue
 			
-		var found = find_editor_control_with_class(child, p_class_name)
+		var found = find_editor_control_with_class(child, p_class_name, condition)
 		if found:
 			return found
 		
