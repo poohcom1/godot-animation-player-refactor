@@ -72,10 +72,21 @@ func render(editor_plugin: EditorPlugin, anim_player: AnimationPlayer) -> void:
 
 	# Sort
 	var paths := track_paths.keys()
+	var get_nearest_valid_node = func(path: NodePath) -> Node:
+		var current_path = path
+		while current_path.get_name_count() > 0:
+			var found = root_node.get_node_or_null(current_path)
+			if found: return found
+			# Pop the last name off the path and try again
+			var names = Array(current_path.get_names())
+			names.pop_back()
+			current_path = NodePath("/".join(names))
+		return root_node
+
 	paths.sort_custom(func(a, b):
-		var node_a = root_node.get_node_or_null(a)
-		var node_b = root_node.get_node_or_null(b)
-		if node_a and node_b:
+		var node_a = get_nearest_valid_node.call(a)
+		var node_b = get_nearest_valid_node.call(b)
+		if node_a != node_b:
 			return !node_a.is_greater_than(node_b)
 		return str(a) < str(b)
 	)
