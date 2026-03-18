@@ -179,7 +179,7 @@ func _on_rename_confirmed(_arg0 = null):
 			for i in range(info.path.get_name_count() - 1):
 				new_path += info.path.get_name(i) + "/"
 			new_path += new
-		_anim_player_refactor.rename_node_path(_anim_player, old, NodePath(new))
+		_anim_player_refactor.rename_node_path(_anim_player, old, NodePath(new_path))
 	elif info.type == EditInfo.Type.VALUE_TRACK:
 		var old_path := info.path
 		var new_path := NodePath(new)
