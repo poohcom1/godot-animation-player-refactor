@@ -72,7 +72,13 @@ func render(editor_plugin: EditorPlugin, anim_player: AnimationPlayer) -> void:
 
 	# Sort
 	var paths := track_paths.keys()
-	paths.sort()
+	paths.sort_custom(func(a, b):
+		var node_a = root_node.get_node_or_null(a)
+		var node_b = root_node.get_node_or_null(b)
+		if node_a and node_b:
+			return !node_a.is_greater_than(node_b)
+		return str(a) < str(b)
+	)
 
 	var tree_root: TreeItem = create_item()
 	hide_root = true
