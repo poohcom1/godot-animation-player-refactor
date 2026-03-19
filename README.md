@@ -1,12 +1,12 @@
 # <img src="icon.png" height="32px" /> Animation Player Refactor
 
-[<img src="https://img.shields.io/static/v1?label=GODOT%204.0&message=Asset%20Library&color=478CBF&labelColor=FFFFFF&style=for-the-badge&logo=godotengine">](https://godotengine.org/asset-library/asset/1777)
+[<img src="https://img.shields.io/static/v1?label=GODOT%204.x&message=Asset%20Library&color=478CBF&labelColor=FFFFFF&style=for-the-badge&logo=godotengine">](https://godotengine.org/asset-library/asset/1777)
 
 A Godot addon for refactoring animations for the `AnimationPlayer`. 
 
 ![Refactor dialogue](screenshots/refactor-dialogue.png)
 
-Edit property references, delete tracks, and even change the root node of the Animation Player without breaking all the path references. No need to manually update every single track everytime you move or rename a node and properties in the scene.
+Edit property references, delete tracks, or change the root node of the Animation Player without breaking all the path references. No need to manually update every single track every time you move or rename a node and properties in the scene.
 
 
 ## Features
@@ -17,7 +17,7 @@ Adds a "Refactor" menu option to the animation panel, with the following feature
  - Marks invalid properties/nodes
  - Full undo/redo support
 
-📄 Note that this addon only refactor *Animations*, so deleting or renaming node does not affect the actual nodes. It is recommended to move/rename the actual nodes first, and then use the plugin to fix broken animations.
+📄 Note that this addon only refactors *Animations*, so deleting or renaming a node does not affect the actual nodes. It is recommended to move/rename the actual nodes first, and then use the plugin to fix broken animations.
 
 ⚠️ Please make sure to use proper version control with this addon to prevent losing changes.
 
