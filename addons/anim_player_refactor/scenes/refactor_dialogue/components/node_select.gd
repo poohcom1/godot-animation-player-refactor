@@ -15,11 +15,12 @@ func render(anim_player: AnimationPlayer):
 	
 
 func _create_items(parent: TreeItem, anim_player: AnimationPlayer, node: Node):
-	var icon := _gui.get_theme_icon(node.get_class(), "EditorIcons")
+	var icon := AnyIcon.get_variant_icon(node)
 	
 	var item := create_item(parent)
 	item.set_text(0, node.name)
 	item.set_icon(0, icon)
+	item.set_icon_max_width(0, 16)
 	item.set_metadata(0, anim_player.get_path_to(node))
 	
 	if anim_player.get_path_to(node) == anim_player.root_node:

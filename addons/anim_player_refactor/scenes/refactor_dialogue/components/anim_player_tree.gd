@@ -19,7 +19,7 @@ func render(editor_plugin: EditorPlugin, anim_player: AnimationPlayer) -> void:
 	var animations = anim_player.get_animation_list()
 	var root_node := anim_player.get_node(anim_player.root_node)
 
-	var track_paths := {}  # Dictionary[NodePath, Dictionary[NodePath, EditInfo]]
+	var track_paths := {} # Dictionary[NodePath, Dictionary[NodePath, EditInfo]]
 
 	# Get EditInfo data
 	for anim_name in animations:
@@ -43,7 +43,7 @@ func render(editor_plugin: EditorPlugin, anim_player: AnimationPlayer) -> void:
 						var method_path = NodePath(
 							(
 								path.get_concatenated_names()
-								+ ":"
+								+":"
 								+ animation.method_track_get_name(i, j)
 							)
 						)
@@ -100,7 +100,7 @@ func render(editor_plugin: EditorPlugin, anim_player: AnimationPlayer) -> void:
 	# Render
 	for path in paths:
 		var node := root_node.get_node_or_null(path)
-		var icon := gui.get_theme_icon(node.get_class() if node != null else "", "EditorIcons")
+		var icon := AnyIcon.get_variant_icon(node) if node else gui.get_theme_icon("Node", "EditorIcons")
 
 		var path_item = create_item(tree_root)
 		path_item.set_editable(0, edittable_items)
@@ -111,6 +111,7 @@ func render(editor_plugin: EditorPlugin, anim_player: AnimationPlayer) -> void:
 		else:
 			path_item.set_text(0, node.name if node else path)
 		path_item.set_icon(0, icon)
+		path_item.set_icon_max_width(0, 16)
 		path_item.set_metadata(0, EditInfo.new(EditInfo.Type.NODE, path, path, node, []))
 		path_item.add_button(0, gui.get_theme_icon("Edit", "EditorIcons"))
 		path_item.add_button(0, gui.get_theme_icon("Remove", "EditorIcons"))
